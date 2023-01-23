@@ -77,3 +77,8 @@ digitalWrite(CONTROL_LIV_ROOM_LIGHTS, LOW);  // Notice the small led is lit. ( i
 
 ![image](https://user-images.githubusercontent.com/14288989/213982119-8997fd56-5dc8-4e6c-8085-5c64ceb2afca.png)
 
+
+### Code in HTML 
+
+![image](https://user-images.githubusercontent.com/14288989/213998396-18493ca8-258e-499a-bee6-f75ce303c53d.png)
+
