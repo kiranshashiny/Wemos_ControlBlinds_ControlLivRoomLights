@@ -18,7 +18,7 @@
 // Update these with values suitable for your network.
 
 const char* ssid = "JioFiber-24_EXT";
-const char* password = "welcome2ibm";  
+const char* password = "xxx";  
 WiFiUDP ntpUDP;
 
 NTPClient timeClient(ntpUDP);
@@ -80,32 +80,56 @@ void callback(char* topic, byte* payload, unsigned int length) {
   Serial.print("Message arrived [");
   Serial.print(topic);
   Serial.print("] ");
-  for (int i = 0; i < length; i++) {
-    Serial.print((char)payload[i]);
-  }
-  Serial.println();
-
-  // Switch on the LED if an 1 was received as first character
-  if ((char)payload[0] == '1') { //CW - raise
-    Serial.println("Setting CONTROL_BLINDS_IN1 Pin 12 to HIGH, 14 to LOW, in function callback, Raise blinds ");
-    digitalWrite(CONTROL_BLINDS_EN_A, HIGH);  // enable the motor, 
-    digitalWrite(CONTROL_BLINDS_IN_1, HIGH);   // Motor CW
-    digitalWrite(CONTROL_BLINDS_IN_2, LOW);    // 
+  String topicStr = topic;
+  
+  // Do a string compare of what we got, since we got a character string, and we have to 
+  // compare, convert character string to a String class and do the comparision.
+  
+  if ( topicStr.compareTo( "inBlindsControl") == 0 )  {
+      Serial.println (" Shashi : inBlindsControl is the topic"); 
+      for (int i = 0; i < length; i++) {
+        Serial.print((char)payload[i]);
+      }
+      Serial.println();
     
-    // it is actually HIGH
-    // 
-  } else if ((char)payload[0] == '0') { // ccw - Lower
-    Serial.println("Lower blinds  CONTROL_BLINDS Pin 12 to HIGH, . in function callback, Lower Blinds ");
-    digitalWrite(CONTROL_BLINDS_EN_A, HIGH);  // enable the motor, 
-    digitalWrite(CONTROL_BLINDS_IN_1, LOW);   // Pin 16 Motor CCW 
-    digitalWrite(CONTROL_BLINDS_IN_2, HIGH);  //  Pin 13
+      // Switch on the LED if an 1 was received as first character
+      if ((char)payload[0] == '1') { //CW - raise
+        Serial.println("Setting CONTROL_BLINDS_IN1 Pin 12 to HIGH, 14 to LOW, in function callback, Raise blinds ");
+        digitalWrite(CONTROL_BLINDS_EN_A, HIGH);  // enable the motor, 
+        digitalWrite(CONTROL_BLINDS_IN_1, HIGH);   // Motor CW
+        digitalWrite(CONTROL_BLINDS_IN_2, LOW);    // 
+        
+        // it is actually HIGH
+        // 
+      } else if ((char)payload[0] == '0') { // ccw - Lower
+        Serial.println("Lower blinds  CONTROL_BLINDS Pin 12 to HIGH, . in function callback, Lower Blinds ");
+        digitalWrite(CONTROL_BLINDS_EN_A, HIGH);  // enable the motor, 
+        digitalWrite(CONTROL_BLINDS_IN_1, LOW);   // Pin 16 Motor CCW 
+        digitalWrite(CONTROL_BLINDS_IN_2, HIGH);  //  Pin 13
+        
+      } else if ((char)payload[0] == '2') {  // Motor off
+        Serial.println("Motor Off CONTROL_BLINDS Pin 12 ENA to LOW, in function callback, Motor Off ");
+        digitalWrite(CONTROL_BLINDS_EN_A, LOW);  // Disable the ENABLE PIN, 
+      }
+  } else if ( topicStr.compareTo( "inLivrmLightsControlTopic") == 0 )  {
+
+      Serial.println ( "the string is inLivrmLightsControlTopic ") ;
+      for (int i = 0; i < length; i++) {
+        Serial.print((char)payload[i]);
+      }
+      Serial.println();
     
-  } else if ((char)payload[0] == '2') {  // Motor off
-    Serial.println("Motor Off CONTROL_BLINDS Pin 12 ENA to LOW, in function callback, Motor Off ");
-    digitalWrite(CONTROL_BLINDS_EN_A, LOW);  // Disable the ENABLE PIN, 
+      // Switch on the LED if an 1 was received as first character
+      if ((char)payload[0] == '1') { //ON received
+        Serial.println("Turning lights On");
+        digitalWrite(CONTROL_LIV_ROOM_LIGHTS, LOW); // its the reverse         
+        
+        // 
+      } else if ((char)payload[0] == '0') { 
+        Serial.println("Turning Lights Off");
+        digitalWrite(CONTROL_LIV_ROOM_LIGHTS, HIGH);  
+      }    
   }
-
-
 }
 
 void reconnect() {
@@ -118,7 +142,7 @@ void reconnect() {
     String clientId = "ESP8266Client-";
     clientId += String(random(0xffff), HEX);
     // Attempt to connect
-    if (client.connect(clientId.c_str(), "oxefqvkn", "uTM7RdarxTPA" )) {
+    if (client.connect(clientId.c_str(), "oxefqvkn", "<PASSWORD>" )) {
       Serial.println("connected");
       // Once connected, publish an announcement...
       if ( flag ) {
@@ -131,6 +155,7 @@ void reconnect() {
       }
       // ... and resubscribe
       client.subscribe("inBlindsControl");
+      client.subscribe("inLivrmLightsControlTopic");
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -191,7 +216,7 @@ void loop() {
 
     int curMinutes = timeClient.getMinutes();
     //Serial.println(curMinutes);
-    if (( curHour >= 12 ) && ( curMinutes < 1 ) ) {
+    if (( curHour >= 18 ) && ( curHour <= 22 ) ) {
     //if ( lights_on == 0 ) {
 
       Serial.println ("Light is ON ");
