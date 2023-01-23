@@ -49,8 +49,21 @@ In short, the code in loop(), Here LOW means (digitalWrite(CONTROL_LIV_ROOM_LIGH
     } else {
       lights_on=0;
       Serial.println ("Light is OFF ");
-      digitalWrite(CONTROL_LIV_ROOM_LIGHTS, HIGH);  // Lights On, 
+      digitalWrite(CONTROL_LIV_ROOM_LIGHTS, HIGH);  // Lights Off, 
       
     }
 ```
+      
+##HIGH
+
+digitalWrite(CONTROL_LIV_ROOM_LIGHTS, HIGH);  // Lights Off,  ( no led on the SSR )
+
+![image](https://user-images.githubusercontent.com/14288989/213980710-b0626e44-4fe9-40ea-b97a-8a4e8ec0d291.png)
+
+
+##LOW
+
+digitalWrite(CONTROL_LIV_ROOM_LIGHTS, LOW);  // Notice the small led is lit. ( it's the reverse )
+
+![image](https://user-images.githubusercontent.com/14288989/213980965-fef89c47-b7f0-4bab-b8ff-8884d6b41b05.png)
 
