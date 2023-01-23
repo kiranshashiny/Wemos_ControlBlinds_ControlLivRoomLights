@@ -54,21 +54,26 @@ In short, the code in loop(), Here LOW means (digitalWrite(CONTROL_LIV_ROOM_LIGH
     }
 ```
       
-## HIGH
+### HIGH
 
 digitalWrite(CONTROL_LIV_ROOM_LIGHTS, HIGH);  // Lights Off,  ( no led on the SSR )
 
 ![image](https://user-images.githubusercontent.com/14288989/213980710-b0626e44-4fe9-40ea-b97a-8a4e8ec0d291.png)
 
 
-## LOW
+### LOW
 
 digitalWrite(CONTROL_LIV_ROOM_LIGHTS, LOW);  // Notice the small led is lit. ( it's the reverse )
 
 ![image](https://user-images.githubusercontent.com/14288989/213980965-fef89c47-b7f0-4bab-b8ff-8884d6b41b05.png)
 
 
-## Pin diagram of Wemos ( PIN 13 is whats being used for turning on and off the solid state relay)
+### Pin diagram of Wemos ( PIN 13 is whats being used for turning on and off the solid state relay)
 
 ![image](https://user-images.githubusercontent.com/14288989/213981141-fdd162de-1db4-401b-8158-c2fc925fc78e.png)
+
+
+### The basic circuit in the junction box.
+
+![image](https://user-images.githubusercontent.com/14288989/213982119-8997fd56-5dc8-4e6c-8085-5c64ceb2afca.png)
 
