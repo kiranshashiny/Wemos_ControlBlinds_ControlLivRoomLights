@@ -68,7 +68,7 @@ digitalWrite(CONTROL_LIV_ROOM_LIGHTS, LOW);  // Notice the small led is lit. ( i
 ![image](https://user-images.githubusercontent.com/14288989/213980965-fef89c47-b7f0-4bab-b8ff-8884d6b41b05.png)
 
 
-## Pin diagram of Wemos
+## Pin diagram of Wemos ( PIN 13 is whats being used for turning on and off the solid state relay)
 
 ![image](https://user-images.githubusercontent.com/14288989/213981141-fdd162de-1db4-401b-8158-c2fc925fc78e.png)
 
