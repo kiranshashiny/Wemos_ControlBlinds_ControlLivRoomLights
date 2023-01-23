@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>      
+        <title>TranquiBar</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js" type="text/javascript"></script>
+
+        <link href="css/styles.css" rel="stylesheet" />
+        <script src="js/jquery-1.10.2.min.js"></script>
+        <script src="js/knockout-3.0.0.js"></script>
+        <script src="js/globalize.min.js"></script>
+        <!-- <script src="js/dx.chartjs.js"></script> -->
+        <script src="https://cdn3.devexpress.com/jslib/17.1.5/js/dx.all.js"></script>
+
+
+    </head>
+    
+    <script type="text/javascript">
+    MQTT_TOPIC = [("WhiteHouse/C1-702/"),("WhiteHouse/kpi2"),("WhiteHouse/kpi3")]
+
+
+    var client;
+     
+    var mqttOptions = {
+        timeout:   3,
+    	useSSL:    true,
+    	userName: "oxefqvkn",
+    	password: "uTM7RdarxTPA",
+
+        onSuccess: function () {
+            console.log("Connected, in onSuccess() function call. subscribing to /WhiteHouse/#");
+            client.subscribe("/WhiteHouse/C1-702/#", {qos: 2});
+        },
+
+        onFailure: function (message) {
+            alert("Connection failed: " + message.errorMessage);
+        },
+    	onFailure:doFail
+
+    }
+    function doFail () {
+	console.log('Error Occured due to some reason');
+    }
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+    
+    async function demo() {
+      console.log('Taking a break...');
+      await sleep(500);
+      console.log('Two seconds later, showing sleep in a loop...');
+    
+      // Sleep in loop
+      for (let i = 0; i < 5; i++) {
+        if (i === 3)
+          await sleep(2000);
+        console.log(i);
+      }
+    }
+
+    // called when a message arrives
+    function onMessageArrived(message) {
+	console.log("onMessageArrived: Payload String = " + message.payloadString);
+	console.log("onMessageArrived: Destntn String = " + message.destinationName);
+	var res = message.payloadString.replace ("C", "" );
+	var res = message.payloadString.replace ("%", "" );
+	var res = message.payloadString.replace ("hPa", "" );
+	//$('#chartContainerWashingMc').dxCircularGauge('instance').value(res);
+	var today = new Date();
+	var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+	var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+	var dateTime = date+' '+time;
+
+	//console.log ( dateTime);
+
+	// Start filling in values that you got from Cloud here.
+
+        if ( message.destinationName == "/WhiteHouse/C1-702/temperature") {
+		// The message.payloadString has a character C in it.
+		// Remove it and then set it to value, or else it wont work.
+		var res = message.payloadString.replace ("C", "" );
+		$('#chartTemp').dxLinearGauge('instance').value(res);
+		document.getElementById("TempUTime").innerHTML = dateTime;
+
+        }
+        if ( message.destinationName == "/WhiteHouse/C1-702/humidity") {
+		// The message.payloadString has a character % in it.
+		// Remove it and then set it to value, or else it wont work.
+		var res = message.payloadString.replace ("%", "" );
+		$('#chartHumidity').dxLinearGauge('instance').value(res);
+		document.getElementById("HumidityUTime").innerHTML = dateTime;
+        }
+        if ( message.destinationName == "/WhiteHouse/C1-702/airp") {
+		// The message.payloadString has a string hPa in it.
+		// Remove it and then set it to value, or else it wont work.
+		var res = message.payloadString.replace ("hPa", "" );
+		$('#chartBarometricP').dxLinearGauge('instance').value(res);
+		document.getElementById("AirPressureUTime").innerHTML = dateTime;
+        }
+	//$('#chartContainer').dxCircularGauge('instance').value(res);
+        if ( message.destinationName == "/WhiteHouse/C1-702/washingmc") {
+		// The message.payloadString has a string "L" in it.
+		// Remove it and then set it to value, or else it wont work.
+		var res = message.payloadString.replace ("L", "" );
+		$('#chartContainerWashingMc').dxCircularGauge('instance').value(res);
+		document.getElementById("WashingmcUTime").innerHTML = dateTime;
+        }
+        if ( message.destinationName == "/WhiteHouse/C1-702/kitchen_tap") {
+		// The message.payloadString has a string "L" in it.
+		// Remove it and then set it to value, or else it wont work.
+		var res = message.payloadString.replace ("L", "" );
+		$('#chartContainerKitchenTap').dxCircularGauge('instance').value(res);
+		document.getElementById("KitchentapUTime").innerHTML = dateTime;
+        }
+    }
+
+    function onConnect() {
+      console.log("onConnect");
+      client.subscribe("/WhiteHouse/C1-702/#");
+      message = new Paho.MQTT.Message("Hello CloudMQTT");
+      message.destinationName = "/shashilaptop";
+      client.send(message);
+    }
+
+    function onConnectionLost(responseObject) {
+	if (responseObject.errorCode !== 0) {
+		console.log("onConnectionLost:"+responseObject.errorMessage);
+        }
+    }
+
+    function containerholder () {
+
+	    $('#numberBoxA1c').dxNumberBox({
+		        value: 20,
+		        min: 0,
+		        max: 1024,
+			height : 100,
+		        placeholder: 'Raw level'
+	    });
+
+	   // Temperature Chart
+           $('#chartTemp').dxLinearGauge({
+                geometry: { orientation: 'vertical' },
+                scale: {
+                    startValue: 0,
+                    endValue: 50,
+                    majorTick: {
+                        customTickValues: [0, 10, 30, 40, 50],
+                        showCalculatedTicks: false
+                    }
+                },
+		valueIndicator: {
+                    type: 'textCloud',
+                    color: '#483D8B'
+                },
+                title: {
+                    text: 'Temp (in C)',
+                    font: { size: 20 }
+                },
+                value: 50
+            });
+	    $('#chartDateTimeTextBox').dxTextBox({
+		value: "Shashi Smith",
+    		});
+
+           $('#chartHumidity').dxLinearGauge({
+        	value :'Humidity',
+		valueIndicator : { 
+				type:"textCloud",
+				color:"#A4DDED"
+		},
+		geometry : { orientation:'vertical' },
+		title: {text:'Humidity (%)', 
+			font : { size:20} 
+			},
+		value : 50 // this is set to default.
+            });
+
+	   // 
+	   $('#chartBarometricP').dxLinearGauge ({
+
+        	value:1100,
+                valueIndicator : { type:"textCloud",
+				   color:"#E3A857"
+				},
+		geometry : { orientation:'vertical' },
+		title: {text:'Barometric Pressure (mb)', 
+			font : { size:20} 
+			},
+		scale : { startValue: "900" ,
+			  endValue:   "1100" ,
+		          customTicks: [900, 1000, 1020, 1100]
+			},
+		rangeContainer : { backgroundColor:"none",
+				ranges :[
+				   {startValue:900 ,endValue:1000,  color:"#A0A0DF"},
+				   {startValue:1000 ,endValue:1020, color:"#A6C567"},
+				   {startValue:1020 ,endValue:1100, color:"#B731A2"}
+				]
+		        },
+	    });	
+
+	   //----------------------- 
+	   //----------------------- 
+            $('#chartContainerKitchenTap').dxCircularGauge({
+                scale: {
+                    startValue: 0,
+                    endValue: 100,
+                    tick: {
+                        tickInterval: 10
+                    }
+                },
+                rangeContainer: {
+                    palette: 'pastel',
+                    ranges: [
+                        { startValue: 40, endValue: 100 },
+                        { startValue: 20, endValue: 40 },
+                        { startValue: 0, endValue: 20 },
+                    ]
+                },
+                title: {
+                    text: 'Kitchen Tap',
+                    font: { size: 20 }
+                },
+		valueIndicator: {
+                    type: 'textCloud',
+                    color: '#483D8B'
+                },
+                value: 25 
+	    });
+	    $('#numberBoxA1b').dxNumberBox({
+		        value: 20,
+		        min: 0,
+		        max: 1024,
+			height : 100,
+		        placeholder: 'Raw level'
+	    });
+
+	   //----------------------- 
+            $('#chartContainerA2c').dxCircularGauge({
+                scale: {
+                    startValue: 0,
+                    endValue: 100,
+                    tick: {
+                        tickInterval: 10
+                    }
+                },
+                rangeContainer: {
+                    palette: 'pastel',
+                    ranges: [
+                        { startValue: 40, endValue: 100 },
+                        { startValue: 20, endValue: 40 },
+                        { startValue: 0, endValue: 20 },
+                    ]
+                },
+                title: {
+                    text: 'A2 Cauvery',
+                    font: { size: 20 }
+                },
+                value: 75 
+            });
+            $('#chartContainerA2b').dxCircularGauge({
+                scale: {
+                    startValue: 0,
+                    endValue: 100,
+                    tick: {
+                        tickInterval: 10
+                    }
+                },
+                rangeContainer: {
+                    palette: 'pastel',
+                    ranges: [
+                        { startValue: 40, endValue: 100 },
+                        { startValue: 20, endValue: 40 },
+                        { startValue: 0, endValue: 20 },
+                    ]
+                },
+                title: {
+                    text: 'A2 Bore',
+                    font: { size: 20 }
+                },
+                value: 85 
+            });
+
+
+            $('#chartContainer2').dxCircularGauge({
+                scale: {
+                    startValue: 0,
+                    endValue: 280,
+                    tick: {
+                        color: '#1A1100',
+                        tickInterval: 30
+                    },
+                    minorTick: {
+                        color: '#1A1100',
+                        visible: true,
+                        tickInterval: 10
+                    }
+                },
+                rangeContainer: {
+                    backgroundColor: 'blue'
+                },
+                title: {
+                    text: 'Speed (in km/u)',
+                    font: { size: 20 }
+                },
+		value: 90,
+       		containerBackgroundColor: 'springgreen'
+            });
+
+    }
+
+    client = new Paho.MQTT.Client("m12.cloudmqtt.com", 39757, "web_" + parseInt(Math.random() * 100, 10));
+    client.connect(mqttOptions);
+  
+    function init() {
+	console.log ("hello in the init (), this is the first one. ");
+
+	client.onMessageArrived = onMessageArrived;
+	client.onConnectionLost = onConnectionLost;
+
+            $('#chartContainer567').dxCircularGauge({
+                scale: {
+                    startValue: 0,
+                    endValue: 6000,
+                    majorTick: {
+                        tickInterval: 1000
+                    }
+                },
+                rangeContainer: {
+                    palette: 'pastel',
+                    ranges: [
+                        { startValue: 0, endValue: 2000 },
+                        { startValue: 2000, endValue: 4000 },
+                        { startValue: 4000, endValue: 6000 },
+                    ]
+                },
+                title: {
+                    text: 'Washing Machine',
+                    font: { size: 20 }
+                },
+                value: 5000
+            });
+	    
+            $('#chartContainerWashingMc').dxCircularGauge({
+                scale: {
+                    startValue: 0,
+                    endValue: 6000,
+                    majorTick: {
+                        tickInterval: 10
+                    }
+                },
+                rangeContainer: {
+                    palette: 'pastel',
+                    ranges: [
+                        { startValue: 0, endValue: 2000 },
+                        { startValue: 2000, endValue: 4000 },
+                        { startValue: 4000, endValue: 6000 },
+                    ]
+                },
+		valueIndicator: {
+                    type: 'textCloud',
+                    color: '#483D8B'
+                },
+                title: {
+                    text: 'Washing Machine',
+                    font: { size: 20 }
+                },
+                value: 5000
+           });
+           containerholder ();
+
+    } // end of function init.
+
+function myFunction() {
+  //client.publish("/WhiteHouse/C1-702/temperature", 40);
+  document.getElementById("demo").innerHTML = "You clicked Temp ";
+  //document.getElementById("subject").value = "Hello World";
+      message = new Paho.MQTT.Message("40");
+      message.destinationName = "/WhiteHouse/C1-702/temperature";
+      client.send(message);
+}
+
+
+function LightsOn() {
+	document.getElementById("LightsOn").innerHTML = "LightsOn";
+	message = new Paho.MQTT.Message("1");
+	message.destinationName = "inLightsTopic";
+	client.send(message);
+}
+
+function LightsOff() {
+	document.getElementById("LightsOff").innerHTML = "LightsOff";
+	message = new Paho.MQTT.Message("0");
+	message.destinationName = "inLightsTopic";
+	client.send(message);
+}
+
+function BlindsRaise() { // inBlindsControl ; 1 = raise, 0 = lower, 2 = motor off
+	document.getElementById("BlindsRaise").innerHTML = "Blinds Raise";
+	message = new Paho.MQTT.Message("1");
+	message.destinationName = "inBlindsControl";
+	client.send(message);
+}
+
+function BlindsLower() {
+	document.getElementById("BlindsLower").innerHTML = "Blinds Lower";
+	message = new Paho.MQTT.Message("0");
+	message.destinationName = "inBlindsControl"; // This will remain same
+	client.send(message);
+}
+function BlindsMotorOff() {
+	document.getElementById("MotorOff").innerHTML = "Motor Off";
+	message = new Paho.MQTT.Message("2");
+	message.destinationName = "inBlindsControl"; // This will remain same
+	client.send(message);
+}
+
+function LivrmLightsOff() {
+	document.getElementById("LivrmLightsOff").innerHTML = "LivLightsOff";
+	message = new Paho.MQTT.Message("0");
+	// This sends the topic to the cloud.
+	message.destinationName = "inLivrmLightsControlTopic";
+	client.send(message);
+}
+
+function LivrmLightsOn() {
+	// this puts the string on the web console under the widget - nothing much.
+	document.getElementById("LivrmLightsOn").innerHTML = "LivLightsOn";
+
+	// prepare sending topic to cloud
+	message = new Paho.MQTT.Message("1");
+	message.destinationName = "inLivrmLightsControlTopic";
+	// send topic to cloud
+	client.send(message);
+}
+
+function myHumidityFunction() {
+  document.getElementById("humidity").innerHTML = "You clicked Humidity";
+      message = new Paho.MQTT.Message("99");
+      message.destinationName = "/WhiteHouse/C1-702/humidity";
+      client.send(message);
+}
+    </script>
+</head>
+
+<body onload="init();">
+                <font face="Arial" size="4" >
+
+                <table width = "100%", height="120%" >
+                <tr>
+                        <td>
+                        <center> Connected Home Sensors Display Console  </center>
+			<hr style="text-align:left;margin-left:0">
+                        <center> C1 - 702  White House /Library/Webserver/Documents/container.html</center>
+                        </td>
+                </tr>
+                </table>
+                </font>
+
+
+                <table width="100%">
+                <tr>
+                        <td> <div id="chartContainerWashingMc" class="case-container" style="float:left;  height: 240px;"> </div> </td>
+                        <td> <div id="chartContainerKitchenTap" class="case-container" style="float:left;  height: 240px;"> </div>  </td>
+                        <td> <div id="chartTemp"         class="case-container" style="float:left;  width: 200px;height: 240px;"> </div>  </td>
+                        <td> <div id="chartHumidity"     class="case-container" style="float:left;  width: 200px;height: 240px;"> </div>  </td>
+                        <td> <div id="chartBarometricP"  class="case-container" style="float:left;  width: 200px;height: 240px;"> </div>  </td>
+                </tr>
+</table>
+               
+Updated on:  
+<table width="100%">
+  <tr>
+    <td><div id ="WashingmcUTime" style="float:left; width: 300px"  >  Not Updated Yet ! </div> </td>
+    <td><div id ="KitchentapUTime" style="float:left; width: 300px"  > Not Updated Yet !  </div> </td>
+    <td><div id ="TempUTime" style="float:left; width: 300px"   >      Not Updated Yet ! </div> </td>
+    <td><div id ="HumidityUTime" style="float:left;width: 300px "  >   Not Updated Yet ! </div> </td>
+    <td><div id ="AirPressureUTime" style="float:left; width: 300px"  > Not Updated Yet ! </div> </td>
+  </tr>
+</table>
+	<!-- If I enable this - it will create another panel at the bottom.
+	 leave this for future enhancement. -->
+	<!-- This creates a container within which we can add more widgets -->
+                <font face="Arial" size="4" >
+                <table width = "100%", height="120%" >
+                <tr>
+                        <td>
+			<hr style="text-align:left;margin-left:0">
+			<!-- <hr style="width:50%;text-align:left;margin-left:0"> -->
+
+                        <center> 567, 4th Cross HMT Layout </center>
+                        </td>
+                </tr>
+                </table>
+                </font>
+	 <table>
+            <tr>
+              <td>
+                <div id="chartContainer567" class="case-container" style="float:left; width: 100%; height: 240px;"></div>
+              </td> 
+
+	     <td>
+	 	<!--	<button style="height:100px; width:100px" name="subject" type="submit" value="LightsOn" onclick="LightsOn()">Lights On</button> -->
+		<input type="button" value="Drawing Room &#13;&#10; &#13;&#10; Lights &#13;&#10 On"; style="text-align:center;height:100px; width:100px" name="subject" type="submit" value="LightsOn" onclick="LightsOn()">
+		<p id="LightsOn"></p>
+
+            </td> 
+
+		<td>
+
+		</td>
+		<td>
+
+		</td>
+		<td>
+
+		</td>
+		<td>
+
+		</td>
+
+	     <td>
+		<input type="button" value="Drawing Room &#13;&#10; &#13;&#10; Lights &#13;&#10 Off"; style="text-align:center;height:100px; width:100px" name="subject" type="submit" value="LightsOff" onclick="LightsOff()">
+		<p id="LightsOff"></p> 
+
+            </td> 
+
+		<td> <!--  add spaces between the boxes --> </td>
+		<td> <!--  add spaces between the boxes --> </td>
+
+
+	     <td>
+		<input type="button" value="LivingRoom &#13;&#10; &#13;&#10; Raise &#13;&#10 Blinds"; style="text-align:center;height:100px; width:100px" name="subject" type="submit" value="BlindsRaise" onclick="BlindsRaise()">
+		<p id="BlindsRaise"></p> 
+            </td>
+
+		<td> <!--  add spaces between the boxes --> </td>
+		<td> <!--  add spaces between the boxes --> </td>
+
+	     <td>
+		<input type="button" value="LivingRoom &#13;&#10; &#13;&#10; MotorOff &#13;&#10 "; style="text-align:center;height:100px; width:100px" name="subject" type="submit" value="BlindsMotorOff" onclick="BlindsMotorOff()">
+		<p id="MotorOff"></p>  <!-- This is for printing on the web page. -->
+            </td> 
+
+		<td> <!--  add spaces between the boxes --> </td>
+		<td> <!--  add spaces between the boxes --> </td>
+
+	     <td>
+		<input type="button" value="LivingRoom &#13;&#10; &#13;&#10; Lower &#13;&#10 Blinds"; style="text-align:center;height:100px; width:100px" name="subject" type="submit" value="BlindsLower" onclick="BlindsLower()">
+		<p id="BlindsLower"></p> <!-- this prints the status atthe bottom of widget --> 
+
+            </td> 
+
+	     <!-- added 23rd Jan 2023 -->
+	     <td>
+		<input type="button" value="Living Room &#13;&#10; &#13;&#10; Lights &#13;&#10 On"; style="text-align:center;height:100px; width:100px" name="subject" type="submit" value="LightsOn" onclick="LivrmLightsOn()">
+		<p id="LivrmLightsOn"></p> 
+
+            </td> 
+
+	     <td>
+		<input type="button" value="Living Room &#13;&#10; &#13;&#10; Lights &#13;&#10 Off"; style="text-align:center;height:100px; width:100px" name="subject" type="submit" value="LightsOff" onclick="LivrmLightsOff()">
+		<p id="LivrmLightsOff"></p> 
+
+            </td> 
+
+
+            </tr>
+         </table>
+
+
+	 <table>
+            <tr>
+             <td>
+
+		<button name="subject" type="submit" value="HTML" onclick="myFunction()">Click for Temp simulation</button>
+		<p id="demo"></p>
+	     </td>
+
+	     <td>
+		<button name="subject" type="submit" value="CSS" onclick="myHumidityFunction()">Click for Humidity </button>
+		<p id="humidity"></p>
+
+		<!-- <button type="button" onclick="alert('Hello world!')">Turn Light On!</button> -->
+            </td> 
+
+            </tr>
+ 
+	 </table>
+</body>
+</html>
+	
+  
+
+
+</body>
+
+</html>
